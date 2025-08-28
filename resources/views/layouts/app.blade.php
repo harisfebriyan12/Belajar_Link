@@ -1,83 +1,61 @@
 <!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Portal Informasi Karawang</title>
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="csrf-token" content="{{ csrf_token() }}">
 
-  @vite(['resources/css/app.css', 'resources/js/app.js'])
+        <title>{{ config('app.name', 'Laravel') }}</title>
 
-  <!-- AOS Animation -->
-  <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet" />
-  <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+        <!-- Fonts -->
+        <link rel="preconnect" href="https://fonts.bunny.net">
+        <link href="https://fonts.bunny.net/css?family=figtree:400,500,600&display=swap" rel="stylesheet" />
 
-  <!-- Google Fonts -->
-  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet" />
-</head>
-<body class="bg-white text-green-900 min-h-screen font-poppins m-0 p-0 overflow-x-hidden" x-data="{ mobileMenuOpen: false }">
+        <!-- Scripts -->
+        @vite(['resources/css/app.css', 'resources/js/app.js'])
+        <!-- SweetAlert2 -->
+        <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.7.32/dist/sweetalert2.all.min.js"></script>
+        <link href="https://cdn.jsdelivr.net/npm/sweetalert2@11.7.32/dist/sweetalert2.min.css" rel="stylesheet">
+        @livewireStyles
 
-      <!-- 👤 Auth Area -->
-      <div class="flex items-center gap-4">
-        @guest
-        @else
-          <div class="relative">
-            <button @click="document.getElementById('user-menu-card').classList.toggle('hidden')" class="flex items-center gap-2 text-white focus:outline-none">
-              <img src="{{ Auth::user()->profile_photo_url ?? 'https://ui-avatars.com/api/?name=' . urlencode(Auth::user()->name) }}" alt="{{ Auth::user()->name }}" class="h-8 w-8 rounded-full border-2 border-white shadow" />
-              <span class="text-sm">{{ Auth::user()->name }}</span>
-              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
-              </svg>
-            </button>
+        <script>
+            window.addEventListener('swal:modal', event => {
+                Swal.fire({
+                    title: event.detail.title,
+                    text: event.detail.text,
+                    icon: event.detail.type,
+                    showConfirmButton: false,
+                    timer: 1500
+                });
+            });
 
-            <!-- Dropdown -->
-            <div id="user-menu-card" class="hidden absolute right-0 mt-2 w-44 bg-white rounded-md shadow-lg z-50 overflow-hidden border">
-              @if(Auth::user()->role === 'admin')
-                <a href="{{ route('admin.dashboard') }}" class="block px-4 py-2 text-sm text-green-700 hover:bg-green-50"> Kembali</a>
-              @endif
-              <form method="POST" action="{{ route('logout') }}">
-                @csrf
-                <button type="submit" class="block w-full text-left px-4 py-2 text-sm text-red-500 hover:bg-red-100">Logout</button>
-              </form>
-            </div>
-          </div>
-        @endguest
-      </div>
-    </div>
-  </header>
+            window.addEventListener('swal:confirm', event => {
+                Swal.fire({
+                    title: event.detail.title,
+                    text: event.detail.text,
+                    icon: event.detail.type,
+                    showCancelButton: true,
+                    confirmButtonColor: '#3085d6',
+                    cancelButtonColor: '#d33',
+                    confirmButtonText: 'Ya, hapus!',
+                    cancelButtonText: 'Batal'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        window.livewire.emit(event.detail.method, event.detail.id);
+                    }
+                });
+            });
+    </head>
+    <body class="font-sans antialiased">
+        <div class="min-h-screen bg-gray-100">
+            @include('layouts.sidebar')
 
-  <!-- 📱 Mobile Menu -->
-  <div x-show="mobileMenuOpen" class="sm:hidden fixed top-16 left-0 w-full bg-gradient-to-r from-green-600 to-green-800 z-40">
-    <nav class="flex flex-col p-4 space-y-2 text-white">
-      <a href="{{ url('/') }}" class="hover:text-green-200">Home</a>
-      @auth
-        @if(Auth::user()->role === 'admin')
-          <a href="{{ route('admin.dashboard') }}" class="hover:text-green-200">Dashboard Admin</a>
-        @else
-          <a href="{{ url('/profile') }}" class="hover:text-green-200">Profile</a>
-        @endif
-        <form method="POST" action="{{ route('logout') }}">
-          @csrf
-          <button type="submit" class="text-left hover:text-red-300">Logout</button>
-        </form>
-      @else
-        <a href="{{ route('login') }}" class="hover:text-green-200">Login</a>
-      @endauth
-    </nav>
-  </div>
+            <!-- Page Content -->
+            <main>
+                {{ $slot }}
+            </main>
+        </div>
 
-  <!-- 📄 Konten Utama -->
-  <main class="pt-24 px-4 sm:px-6">
-    @yield('content')
-  </main>
-
-  <!-- 🌟 Scripts -->
-  <script>
-    AOS.init({
-      duration: 900,
-      easing: 'ease-in-out',
-      once: true,
-    });
-  </script>
-  <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
-</body>
+        @livewireScripts
+    </body>
 </html>
