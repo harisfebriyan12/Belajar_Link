@@ -1,4 +1,4 @@
-Panduan Lengkap Mengatur Database Laravel untuk Portal Informasi Karawang
+Panduan Lengkap Mengatur Database Laravel
 
 1. Pastikan Anda sudah mengimpor file SQL ke MySQL
 ---------------------------------------------------
