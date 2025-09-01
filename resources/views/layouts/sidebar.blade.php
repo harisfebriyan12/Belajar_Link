@@ -56,7 +56,7 @@
         class="bg-blue-900 text-white flex flex-col transition-all duration-300 fixed inset-y-0 left-0 transform -translate-x-full md:translate-x-0 z-40"
     >
         <div class="p-4 flex items-center justify-between border-b border-blue-900">
-            <span x-show="!collapsed" class="ml-3 font-bold text-white">Admin Panel</span>
+
             <button @click="sidebarOpen = false" class="md:hidden text-white">
                 <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
             </button>
