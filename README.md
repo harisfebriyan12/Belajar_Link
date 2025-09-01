@@ -1,4 +1,4 @@
-# Panduan Instalasi PortalWebn (Laravel)
+# Panduan Instalasi 
 
 ## 1. Persyaratan Sistem
 - PHP >= 8.2
@@ -10,8 +10,8 @@
 ## 2. Clone/Download Proyek
 Jika dari GitHub:
 ```bash
-git clone https://github.com/username/portalWebn.git
-cd portalWebn
+git clone https://github.com/username/belajar_link.git
+cd  belajar_link
 ```
 
 ## 3. Instalasi Dependency
@@ -37,7 +37,7 @@ php artisan key:generate
 ```
 
 ## 6. Migrasi Database
-- Import file SQL (misal: `portal_karawang_admin_db.sql`) ke database melalui phpMyAdmin
+- Import file SQL (misal: `belajar_link.sql`) ke database melalui phpMyAdmin
 - Jalankan migrasi:
 ```bash
 php artisan migrate
