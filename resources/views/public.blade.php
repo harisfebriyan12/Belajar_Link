@@ -1,12 +1,11 @@
 <!DOCTYPE html>
 <html lang="id">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{{ $pageTitle }}</title>
     <meta name="description" content="{{ $pageDescription }}">
-    {{-- Menggunakan Tailwind CSS via CDN untuk kemudahan --}}
+
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         /* Sedikit custom style untuk font dan line-clamp */
@@ -15,6 +14,7 @@
         body {
             font-family: 'Inter', sans-serif;
         }
+
         .line-clamp-1 {
             overflow: hidden;
             display: -webkit-box;
@@ -78,7 +78,7 @@
                         {{-- Tanggal Dibuat --}}
                         <div class="flex-shrink-0 ml-4 text-right">
                             <p class="text-xs text-gray-400">
-                                {{ $link->created_at->format('d M Y') }}
+                                {{ $link->created_at->format('d M Y')}}
                             </p>
                         </div>
                     </a>
@@ -89,6 +89,14 @@
                 @endforelse
             </div>
         </main>
+
+        <!-- Footer Section -->
+        <footer class="text-center py-8 mt-16 border-t border-white/10">
+            <p class="text-sm text-blue-200/70">
+                &copy; {{ date('Y') }} {{ $pageTitle}}. Hak Cipta Dilindungi.
+            </p>
+        </footer>
     </div>
 </body>
+
 </html>

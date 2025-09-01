@@ -21,6 +21,7 @@ class PublicController extends Controller
         $pageTitle = $activeJudul->judul ?? 'Kumpulan Link Website';
         $pageDescription = $activeJudul->deskripsi ?? 'Temukan berbagai link menarik dan bermanfaat di bawah ini!';
         $pageAvatar = $activeJudul->images ?? null;
+        $pageDeskripsi = $activeJudul->deskripsi ?? null;
 
         return view('public', compact('links', 'pageTitle', 'pageDescription', 'pageAvatar'));
     }

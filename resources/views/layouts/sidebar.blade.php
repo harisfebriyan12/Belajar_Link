@@ -8,6 +8,7 @@
     @livewireStyles
     <!-- SweetAlert2 -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
@@ -39,71 +40,68 @@
     </script>
     @stack('scripts')
 </head>
-<body class="bg-gray-100 text-gray-800 min-h-screen">
-<div x-data="{collapsed: false}" class="flex min-h-screen h-screen overflow-hidden">
-    @persist('sidebar')
-        <!-- Sidebar -->
-        <aside
-            :class="collapsed ? 'w-20' : 'w-64'"
-            class="flex flex-col bg-blue-900 text-white shadow-xl transition-all duration-300 h-full min-h-screen"
-        >
-            <div class="p-4 flex items-center border-b border-blue-900">
-                <button @click="collapsed = !collapsed" class="text-white focus:outline-none">
-                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
-                    </svg>
-                </button>
-                <span x-show="!collapsed" class="ml-3 font-bold text-white">Website</span>
-            </div>
-            <nav class="py-4 flex-1">
-                <ul>
-                    <li>
-                        <a href="{{ route('dashboard') }}" wire:navigate class="flex items-center px-4 py-3 text-sm font-medium rounded-lg group transition-all duration-200 hover:bg-blue-600">
-                            <svg class="mr-3 h-5 w-5 text-blue-200 group-hover:text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
-                            </svg>
-                            <span x-show="!collapsed" class="text-blue-100 group-hover:text-white">Dashboard</span>
-                        </a>
-                    </li>
+<body class="bg-gray-100 text-gray-800">
+<div x-data="{ collapsed: false, sidebarOpen: false }" @keydown.escape.window="sidebarOpen = false" class="relative min-h-screen">
 
-                    <li>
-                        <a href="{{ route('links.index') }}" wire:navigate class="flex items-center px-4 py-3 text-sm font-medium rounded-lg group transition-all duration-200 hover:bg-blue-600">
-                            <svg class="mr-3 h-5 w-5 text-blue-200 group-hover:text-white" fill ="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
-                            </svg>
-                            <span x-show="!collapsed" class="text-blue-100 group-hover:text-white">Link</span>
-                        </a>
-                    </li>
+    <!-- Sidebar Overlay for mobile -->
+    <div x-show="sidebarOpen" class="fixed inset-0 bg-black bg-opacity-50 z-30 md:hidden" @click="sidebarOpen = false" style="display: none;"></div>
 
-                    <li>
-                        <a href="{{ route('judul-halaman.index') }}" wire:navigate class="flex items-center px-4 py-3 text-sm font-medium rounded-lg group transition-all duration-200 hover:bg-blue-600">
-                            <svg class="mr-3 h-5 w-5 text-blue-200 group-hover:text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                            </svg>
-                            <span x-show="!collapsed" class="text-blue-100 group-hover:text-white"> Pengaturan</span>
-                        </a>
-                    </li>
-                </ul>
-            </nav>
-        </aside>
-    @endpersist
+    <!-- Sidebar -->
+    <aside
+        :class="{
+            'w-64': !collapsed,
+            'w-20': collapsed,
+            'translate-x-0': sidebarOpen
+        }"
+        class="bg-blue-900 text-white flex flex-col transition-all duration-300 fixed inset-y-0 left-0 transform -translate-x-full md:translate-x-0 z-40"
+    >
+        <div class="p-4 flex items-center justify-between border-b border-blue-900">
+            <span x-show="!collapsed" class="ml-3 font-bold text-white">Admin Panel</span>
+            <button @click="sidebarOpen = false" class="md:hidden text-white">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+            </button>
+        </div>
+        <nav class="py-4 flex-1">
+            <ul>
+                <li>
+                    <a href="{{ route('dashboard') }}" wire:navigate class="flex items-center px-4 py-3 text-sm font-medium rounded-lg group transition-all duration-200 {{ request()->routeIs('dashboard') ? 'bg-blue-700 text-white' : 'text-blue-100 hover:bg-blue-600 hover:text-white' }}">
+                        <svg class="mr-3 h-5 w-5 text-blue-200 group-hover:text-white flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+                        </svg>
+                        <span x-show="!collapsed" class="truncate">Dashboard</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="{{ route('links.index') }}" wire:navigate class="flex items-center px-4 py-3 text-sm font-medium rounded-lg group transition-all duration-200 {{ request()->routeIs('links.index') ? 'bg-blue-700 text-white' : 'text-blue-100 hover:bg-blue-600 hover:text-white' }}">
+                        <svg class="mr-3 h-5 w-5 text-blue-200 group-hover:text-white flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
+                        </svg>
+                        <span x-show="!collapsed" class="truncate">Link</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="{{ route('judul-halaman.index') }}" wire:navigate class="flex items-center px-4 py-3 text-sm font-medium rounded-lg group transition-all duration-200 {{ request()->routeIs('judul-halaman.index') ? 'bg-blue-700 text-white' : 'text-blue-100 hover:bg-blue-600 hover:text-white' }}">
+                        <svg class="mr-3 h-5 w-5 text-blue-200 group-hover:text-white flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                        </svg>
+                        <span x-show="!collapsed" class="truncate">Judul Halaman</span>
+                    </a>
+                </li>
+            </ul>
+        </nav>
+    </aside>
 
     <!-- Main Content -->
-    <div class="flex-1 flex flex-col min-h-screen" x-data="{ isLoading: false }" @navigate:start.window="isLoading = true" @navigate:end.window="isLoading = false">
+    <div class="flex-1 flex flex-col transition-all duration-300" :class="{'md:pl-64': !collapsed, 'md:pl-20': collapsed}">
         @include('layouts.navbar')
         <div class="flex-1 relative">
             <!-- Page Content -->
-            <main class="h-full overflow-y-auto p-6 bg-gray-50 transition-all duration-300" :class="{'opacity-25 blur-sm': isLoading}">
+            <main class="h-full overflow-y-auto p-6 bg-gray-50">
                 @yield('content')
             </main>
-            <!-- Loading Spinner Overlay -->
-            <div x-show="isLoading" x-transition class="absolute inset-0 flex items-center justify-center bg-gray-50 bg-opacity-50 z-50" style="display: none;">
-                <div class="animate-spin rounded-full h-20 w-20 border-t-4 border-b-4 border-blue-900"></div>
-            </div>
         </div>
     </div>
 </div>
 @livewireScripts
-<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 </body>
 </html>

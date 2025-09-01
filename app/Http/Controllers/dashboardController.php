@@ -17,7 +17,7 @@ class dashboardController extends Controller
         $totalUsers = User::count();
         $newLinksLastWeek = Link::where('created_at', '>=', now()->subWeek())->count();
 
-        $activityLimit = 5;
+        $activityLimit = 2000000;
         $recentLinks = Link::with('user')->latest('updated_at')->take($activityLimit)->get()->map(function ($link) {
             return [
                 'type' => 'link',
@@ -30,13 +30,13 @@ class dashboardController extends Controller
         });
 
         // Ambil aktivitas terbaru dari Judul Halaman
-        $recentJudulHalaman = JudulHalaman::with('user')->latest('updated_at')->take($activityLimit)->get()->map(function ($judul) {
+        $recentJudulHalaman = JudulHalaman::latest('updated_at')->take($activityLimit)->get()->map(function ($judul) {
             return [
                 'type' => 'judul_halaman',
                 'judul' => $judul->judul,
                 'action' => $judul->created_at->equalTo($judul->updated_at) ? 'created' : 'updated',
-                'user_name' => $judul->user->name ?? 'Sostem',
-                'user_email' => $judul->user->email ?? null,
+                'user_name' => 'Sistem',
+                'user_email' => null,
                 'timestamp' => $judul->updated_at,
             ];
         });

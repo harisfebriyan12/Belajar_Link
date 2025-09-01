@@ -32,28 +32,28 @@ class LinkController extends Controller
 
     public function store(Request $request)
     {
-        try {
-            $request->validate([
-                'judul' => 'required|string|max:255',
-                'deskripsi' => 'required|string',
-                'gambar' => 'required|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
-                'url' => 'required|url|max:2048',
-            ]);
+        $request->validate([
+            'judul' => 'required|string|max:255|unique:links,judul',
+            'deskripsi' => 'required|string',
+            'gambar' => 'required|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
+            'url' => 'required|url|max:2048',
+        ], [
+            'judul.unique' => 'Judul link sudah ada, silakan gunakan judul lain.',
+            'gambar.required' => 'Gambar tidak boleh kosong.',
+            'url.url' => 'Format URL tidak valid.'
+        ]);
 
-            $imagePath = $request->file('gambar')->store('links', 'public');
+        $imagePath = $request->file('gambar')->store('links', 'public');
 
-            Link::create([
-                'judul' => $request->judul,
-                'deskripsi' => $request->deskripsi,
-                'gambar' => $imagePath,
-                'url' => $request->url,
-                'user_id' => auth()->id(),
-            ]);
+        Link::create([
+            'judul' => $request->judul,
+            'deskripsi' => $request->deskripsi,
+            'gambar' => $imagePath,
+            'url' => $request->url,
+            'user_id' => auth()->id(),
+        ]);
 
-            return redirect()->route('links.index')->with('success', 'Link berhasil ditambahkan!');
-        } catch (\Exception $e) {
-            return redirect()->route('links.index')->with('error', 'Gagal menambahkan link: ' . $e->getMessage());
-        }
+        return redirect()->route('links.index')->with('success', 'Link berhasil ditambahkan!');
     }
 
     public function edit(Link $link)
@@ -63,47 +63,42 @@ class LinkController extends Controller
 
     public function update(Request $request, Link $link)
     {
-        try {
-            $request->validate([
-                'judul' => 'required|string|max:255',
-                'deskripsi' => 'required|string',
-                'url' => 'required|url|max:2048',
-                'gambar' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
-            ]);
+        $request->validate([
+            'judul' => 'required|string|max:255|unique:links,judul,' . $link->id,
+            'deskripsi' => 'required|string',
+            'url' => 'required|url|max:2048',
+            'gambar' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
+        ], [
+            'judul.unique' => 'Judul link sudah ada, silakan gunakan judul lain.',
+            'url.url' => 'Format URL tidak valid.'
+        ]);
 
-            $data = $request->all();
-            $data['user_id'] = auth()->id();
+        $data = $request->only(['judul', 'deskripsi', 'url']);
+        $data['user_id'] = auth()->id();
 
-            if ($request->hasFile('gambar')) {
-                // Hapus gambar lama
-                if ($link->gambar && Storage::disk('public')->exists($link->gambar)) {
-                    Storage::disk('public')->delete($link->gambar);
-                }
-                // Upload gambar baru
-                $data['gambar'] = $request->file('gambar')->store('links', 'public');
+        if ($request->hasFile('gambar')) {
+            // Hapus gambar lama
+            if ($link->gambar && Storage::disk('public')->exists($link->gambar)) {
+                Storage::disk('public')->delete($link->gambar);
             }
-
-            $link->update($data);
-
-            return redirect()->route('links.index')->with('success', 'Link berhasil diperbarui!');
-        } catch (\Exception $e) {
-            return redirect()->route('links.index')->with('error', 'Gagal memperbarui link: ' . $e->getMessage());
+            // Upload gambar baru
+            $data['gambar'] = $request->file('gambar')->store('links', 'public');
         }
+
+        $link->update($data);
+
+        return redirect()->route('links.index')->with('success', 'Link berhasil diperbarui!');
     }
 
     public function destroy(Link $link)
     {
-        try {
-            // Hapus gambar dari storage sebelum menghapus record dari database
-            if ($link->gambar && Storage::disk('public')->exists($link->gambar)) {
-                Storage::disk('public')->delete($link->gambar);
-            }
-
-            $link->delete();
-            return redirect()->route('links.index')->with('success', 'Link berhasil dihapus!');
-        } catch (\Exception $e) {
-            return redirect()->route('links.index')->with('error', 'Gagal menghapus link: ' . $e->getMessage());
+        // Hapus gambar dari storage sebelum menghapus record dari database
+        if ($link->gambar && Storage::disk('public')->exists($link->gambar)) {
+            Storage::disk('public')->delete($link->gambar);
         }
+
+        $link->delete();
+        return redirect()->route('links.index')->with('success', 'Link berhasil dihapus!');
     }
 
     public function toggleStatus(Request $request, Link $link)

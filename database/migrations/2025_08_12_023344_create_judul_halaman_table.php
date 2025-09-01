@@ -13,7 +13,6 @@ public function up(): void
 {
     Schema::create('judul_halaman', function (Blueprint $table) {
         $table->id();
-        $table->foreignId('user_id')->nullable()->constrained()->onDelete('set null');
         $table->string('judul');
         $table->text('deskripsi')->nullable();
         $table->boolean('is_active')->default(false);

@@ -1,12 +1,11 @@
 <!DOCTYPE html>
 <html lang="id">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><?php echo e($pageTitle); ?></title>
     <meta name="description" content="<?php echo e($pageDescription); ?>">
-    
+
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         /* Sedikit custom style untuk font dan line-clamp */
@@ -15,6 +14,7 @@
         body {
             font-family: 'Inter', sans-serif;
         }
+
         .line-clamp-1 {
             overflow: hidden;
             display: -webkit-box;
@@ -91,7 +91,15 @@
                 <?php endif; ?>
             </div>
         </main>
+
+        <!-- Footer Section -->
+        <footer class="text-center py-8 mt-16 border-t border-white/10">
+            <p class="text-sm text-blue-200/70">
+                &copy; <?php echo e(date('Y')); ?> <?php echo e($pageTitle); ?>. Hak Cipta Dilindungi.
+            </p>
+        </footer>
     </div>
 </body>
+
 </html>
 <?php /**PATH C:\xampp\htdocs\portalWebn\resources\views/public.blade.php ENDPATH**/ ?>

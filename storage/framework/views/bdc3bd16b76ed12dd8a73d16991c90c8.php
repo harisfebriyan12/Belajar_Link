@@ -23,6 +23,41 @@
     .action-btn:hover {
         transform: scale(1.1);
     }
+
+
+    /* Responsive Table for Mobile */
+    @media screen and (max-width: 768px) {
+        .responsive-table thead {
+            display: none;
+        }
+        .responsive-table tr {
+            display: block;
+            margin-bottom: 1.5rem;
+            border-radius: 0.75rem;
+            overflow: hidden;
+            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+            border: 1px solid #e5e7eb; /* gray-200 */
+        }
+        .responsive-table td {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.75rem 1rem;
+            text-align: right;
+            border-bottom: 1px solid #f3f4f6; /* gray-100 */
+        }
+        .responsive-table tr:last-child {
+            margin-bottom: 0;
+        }
+        .responsive-table td:last-child {
+            border-bottom: 0;
+        }
+        .responsive-table td::before {
+            content: attr(data-label);
+            font-weight: 600;
+            color: #374151; /* gray-700 */
+        }
+    }
     .pagination {
         display: flex;
         gap: 8px;
@@ -49,6 +84,13 @@
         background: #2563eb;
         color: white;
         font-weight: 600;
+    }
+    .pagination-loading {
+        background: #2563eb !important; /* same as .current */
+        color: white !important;
+        cursor: wait;
+        display: inline-flex;
+        align-items: center;
     }
     .search-container {
         transition: all 0.3s ease;
@@ -189,7 +231,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 text: 'Data yang dihapus tidak dapat dikembalikan!',
                 icon: 'warning',
                 showCancelButton: true,
-                confirmButtonColor: '#2563eb',
+                confirmButtonColor: '#1e3a8a',
                 cancelButtonColor: '#ef4444',
                 confirmButtonText: 'Ya, hapus!',
                 cancelButtonText: 'Batal',
@@ -211,19 +253,67 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 
     window.toggleLinkStatus = toggleLinkStatus;
+
+    // SweetAlert for validation errors
+    <?php if($errors->any()): ?>
+        Swal.fire({
+            icon: 'error',
+            title: 'Oops... Terjadi Kesalahan',
+            text: '<?php echo e($errors->first()); ?>',
+            confirmButtonColor: '#1e3a8a'
+        });
+    <?php endif; ?>
+
+    // Re-open modal on validation failure
+    <?php if($errors->any()): ?>
+        <?php if(old('_method') === 'PUT'): ?>
+            const editModal = document.getElementById('edit-link-modal');
+            if (editModal) {
+                const form = document.getElementById('edit-form');
+                form.action = `/links/<?php echo e(old('id')); ?>`;
+                document.getElementById('edit-judul').value = '<?php echo e(old('judul')); ?>';
+                document.getElementById('edit-deskripsi').value = '<?php echo e(old('deskripsi')); ?>';
+                document.getElementById('edit-url').value = '<?php echo e(old('url')); ?>';
+                openModal(editModal);
+            }
+        <?php else: ?>
+            openModal(document.getElementById('tambah-link-modal'));
+        <?php endif; ?>
+    <?php endif; ?>
+
+    // Pagination Loading State
+    document.querySelectorAll('.pagination a').forEach(link => {
+        link.addEventListener('click', function(e) {
+            // Add a loading indicator to the clicked link
+            this.innerHTML = `
+                <svg class="animate-spin -ml-1 mr-2 h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+                Memuat...
+            `;
+            this.classList.add('pagination-loading');
+
+            // Disable all other pagination links to prevent multiple clicks
+            document.querySelectorAll('.pagination a').forEach(otherLink => {
+                otherLink.style.pointerEvents = 'none';
+                otherLink.classList.add('opacity-50');
+            });
+        });
+    });
 });
 </script>
 <?php $__env->stopPush(); ?>
 
 <?php $__env->startSection('content'); ?>
-<div class="py-12 bg-gray-100 min-h-screen">
+<div class="py-6 md:py-12 bg-gray-100 min-h-screen">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <!-- Header and Search Section -->
-        <div class="bg-white rounded-xl shadow-lg p-6 mb-8">
+        <div class="bg-white rounded-xl shadow-lg p-4 md:p-6 mb-8">
             <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
                 <h1 class="text-3xl md:text-4xl font-extrabold text-gray-900">Manajemen Link</h1>
                 <button
-                    class="bg-blue-900 hover:from-blue-700 hover:to-blue-900 text-white px-4 py-2 rounded-lg transition-all duration-300 flex items-center gap-2"
+                    class="bg-blue-900 hover:from-blue-700 hover:to-blue-900 text-white px-4 py-2 rounded-lg transition-all duration-300 flex items-center gap-2 shrink-0"
                     data-modal-open="tambah-link-modal"
                     aria-label="Tambah Link Baru">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
@@ -252,32 +342,30 @@ document.addEventListener('DOMContentLoaded', function() {
         <!-- Table Section -->
         <div class="bg-white rounded-xl shadow-lg overflow-hidden">
             <div class="overflow-x-auto">
-                <table class="min-w-full divide-y divide-gray-200">
+                <table class="min-w-full divide-y divide-gray-200 responsive-table">
                     <thead class="bg-gradient-to-r from-blue-900 to-blue-800">
                         <tr>
                             <th class="px-6 py-4 text-left text-xs font-semibold text-white uppercase tracking-wider">No</th>
                             <th class="px-6 py-4 text-left text-xs font-semibold text-white uppercase tracking-wider">Judul</th>
-                            <th class="px-6 py-4 text-left text-xs font-semibold text-white uppercase tracking-wider">Deskripsi</th>
                             <th class="px-6 py-4 text-left text-xs font-semibold text-white uppercase tracking-wider">Link</th>
-                            <th class="px-6 py-4 text-left text-xs font-semibold text-white uppercase tracking-wider">Aksi</th>
+                            <th class="px-6 py-4 text-center text-xs font-semibold text-white uppercase tracking-wider">Aksi</th>
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-gray-200">
                         <?php $__empty_1 = true; $__currentLoopData = $links; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $index => $link): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); $__empty_1 = false; ?>
-                        <tr class="table-row bg-white">
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
+                        <tr class="table-row bg-white hover:bg-gray-50">
+                            <td data-label="No" class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
                                 <span class="inline-flex items-center justify-center h-8 w-8 rounded-full bg-blue-100 text-blue-600 font-semibold">
                                     <?php echo e($links->firstItem() + $index); ?>
 
                                 </span>
                             </td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900"><?php echo e(Str::limit($link->judul, 30)); ?></td>
-                            <td class="px-6 py-4 text-sm text-gray-600 line-clamp-2 max-w-md"><?php echo e(Str::limit($link->deskripsi, 50)); ?></td>
-                            <td class="px-6 py-4 text-sm text-blue-600">
+                            <td data-label="Judul" class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900"><?php echo e(Str::limit($link->judul, 30)); ?></td>
+                            <td data-label="Link" class="px-6 py-4 text-sm text-blue-600">
                                 <a href="<?php echo e($link->url); ?>" target="_blank" class="hover:underline truncate block max-w-[150px] md:max-w-[250px]"><?php echo e(Str::limit($link->url, 25)); ?></a>
                             </td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                                <div class="flex items-center space-x-3">
+                            <td data-label="Aksi" class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                                <div class="flex items-center justify-end space-x-3">
                                     <button class="action-btn p-2 text-blue-600 hover:text-blue-800 hover:bg-blue-100 rounded-full transition-colors duration-200 detail-link-btn"
                                             title="Detail <?php echo e($link->judul); ?>"
                                             data-judul="<?php echo e(e($link->judul)); ?>"
@@ -403,7 +491,7 @@ unset($__errorArgs, $__bag); ?>
                     </div>
                     <div class="flex justify-end gap-3">
                         <button type="button" class="px-4 py-2 text-gray-600 hover:text-gray-800 rounded-lg bg-gray-100 hover:bg-gray-200 transition-all duration-200" data-modal-close="tambah-link-modal" aria-label="Batal">Batal</button>
-                        <button type="submit" class="px-4 py-2 bg-gradient-to-r from-blue-600 to-blue-800 text-white rounded-lg hover:from-blue-700 hover:to-blue-900 transition-all duration-200" aria-label="Simpan">Simpan</button>
+                        <button type="submit" class="px-4 py-2 bg-blue-900 text-white rounded-lg hover:from-blue-700 hover:to-blue-900 transition-all duration-200" aria-label="Simpan">Simpan</button>
                     </div>
                 </form>
             </div>
@@ -476,7 +564,7 @@ unset($__errorArgs, $__bag); ?>
                     </div>
                     <div class="flex justify-end gap-3">
                         <button type="button" class="px-4 py-2 text-gray-600 hover:text-gray-800 rounded-lg bg-gray-100 hover:bg-gray-200 transition-all duration-200" data-modal-close="edit-link-modal" aria-label="Batal">Batal</button>
-                        <button type="submit" class="px-4 py-2 bg-blue-900 text-white rounded-lg hover:from-blue-700 hover:to-blue-900 transition-all duration-200" aria-label="Simpan Perubahan">Perbaharui</button>
+                        <button type="submit" class="px-4 py-2 bg-blue-900 text-white rounded-lg hover:from-blue-700 hover:to-blue-900 transition-all duration-200" aria-label="Simpan Perubahan">Simpan Perubahan</button>
                     </div>
                 </form>
             </div>
@@ -518,4 +606,5 @@ unset($__errorArgs, $__bag); ?>
     </div>
 </div>
 <?php $__env->stopSection(); ?>
+
 <?php echo $__env->make('layouts.sidebar', array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?><?php /**PATH C:\xampp\htdocs\portalWebn\resources\views/links/index.blade.php ENDPATH**/ ?>

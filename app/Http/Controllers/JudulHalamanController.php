@@ -8,24 +8,29 @@ use Illuminate\Http\Request;
 
 class JudulHalamanController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $judulHalamans = JudulHalaman::latest()->paginate(10);
+        $query = JudulHalaman::query();
+        $search = $request->input('search');
+
+        if ($search) {
+            $query->where('judul', 'like', '%' . $search . '%')
+                  ->orWhere('deskripsi', 'like', '%' . $search . '%');
+        }
+
+        $judulHalamans = $query->latest()->paginate(5)->withQueryString();
         return view('judul-halaman.index', compact('judulHalamans'));
     }
 
     public function store(Request $request)
     {
         $request->validate([
-            'judul' => 'required|string|max:255',
+            'judul' => 'required|string|max:255|unique:judul_halaman,judul',
             'deskripsi' => 'nullable|string',
             'images' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
+        ], [
+            'judul.unique' => 'Judul sudah terdaftar, silakan gunakan judul lain.'
         ]);
-
-        // Jika is_active true, nonaktifkan semua judul lain
-        if ($request->boolean('is_active')) {
-            JudulHalaman::where('is_active', true)->update(['is_active' => false]);
-        }
 
         $imagePath = null;
         if ($request->hasFile('images')) {
@@ -36,7 +41,7 @@ class JudulHalamanController extends Controller
             'judul' => $request->judul,
             'deskripsi' => $request->deskripsi,
             'images' => $imagePath,
-            'is_active' => $request->boolean('is_active')
+            'is_active' => $request->boolean('is_active'),
         ]);
 
         return redirect()->route('judul-halaman.index')
@@ -46,20 +51,15 @@ class JudulHalamanController extends Controller
     public function update(Request $request, JudulHalaman $judulHalaman)
     {
         $request->validate([
-            'judul' => 'required|string|max:255',
+            'judul' => 'required|string|max:255|unique:judul_halaman,judul,' . $judulHalaman->id,
             'deskripsi' => 'nullable|string',
             'images' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
+        ], [
+            'judul.unique' => 'Judul sudah terdaftar, silakan gunakan judul lain.'
         ]);
 
         $data = $request->only('judul', 'deskripsi');
         $data['is_active'] = $request->boolean('is_active');
-
-        // Jika mengaktifkan judul ini, nonaktifkan yang lain
-        if ($request->boolean('is_active')) {
-            JudulHalaman::where('is_active', true)
-                ->where('id', '!=', $judulHalaman->id)
-                ->update(['is_active' => false]);
-        }
 
         if ($request->hasFile('images')) {
             // Hapus gambar lama jika ada
@@ -92,13 +92,6 @@ class JudulHalamanController extends Controller
     public function toggleStatus(Request $request, JudulHalaman $judulHalaman)
     {
         $newStatus = $request->input('is_active') === 'true';
-
-        // Jika mengaktifkan judul ini, nonaktifkan yang lain
-        if ($newStatus) {
-            JudulHalaman::where('is_active', true)
-                ->where('id', '!=', $judulHalaman->id)
-                ->update(['is_active' => false]);
-        }
 
         $judulHalaman->update([
             'is_active' => $newStatus
